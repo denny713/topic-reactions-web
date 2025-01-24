@@ -1,45 +1,51 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, message } from 'antd';
-import axios from 'axios';
+import { useDispatch } from 'react-redux';
+import { setToken } from '../redux/slices/authSlice';
+import { useNavigate } from 'react-router-dom';
+import { login } from '../services/authService';
 
 const Login = () => {
-  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const onFinish = async (values) => {
-    setLoading(true);
+  const handleLogin = async (e) => {
+    e.preventDefault();
     try {
-      const response = await axios.post('/api/auth/login', values);
-      message.success('Login successful!');
-      // Handle successful login (e.g., redirect to homepage)
-    } catch (error) {
-      message.error('Login failed: ' + error.response.data.message);
-    } finally {
-      setLoading(false);
+      const response = await login({ email, password });
+      dispatch(setToken({ token: response.token, user: response.user }));
+      navigate('/');
+    } catch (err) {
+      setError('Invalid email or password');
     }
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: 'auto' }}>
+    <div className="login-container">
       <h2>Login</h2>
-      <Form onFinish={onFinish}>
-        <Form.Item
-          name="email"
-          rules={[{ required: true, message: 'Please input your email!' }]}
-        >
-          <Input placeholder="Email" />
-        </Form.Item>
-        <Form.Item
-          name="password"
-          rules={[{ required: true, message: 'Please input your password!' }]}
-        >
-          <Input.Password placeholder="Password" />
-        </Form.Item>
-        <Form.Item>
-          <Button type="primary" htmlType="submit" loading={loading}>
-            Login
-          </Button>
-        </Form.Item>
-      </Form>
+      <form onSubmit={handleLogin}>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        {error && <p className="error">{error}</p>}
+        <button type="submit">Login</button>
+      </form>
+      <p>
+        Don’t have an account? <a href="/register">Register here</a>
+      </p>
     </div>
   );
 };

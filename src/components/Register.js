@@ -1,51 +1,52 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, message } from 'antd';
-import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { register } from '../services/authService';
 
 const Register = () => {
-  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
-  const onFinish = async (values) => {
-    setLoading(true);
+  const handleRegister = async (e) => {
+    e.preventDefault();
     try {
-      const response = await axios.post('/api/auth/register', values);
-      message.success('Registration successful! Please log in.');
-      // Optionally redirect to login page
-    } catch (error) {
-      message.error('Registration failed: ' + error.response.data.message);
-    } finally {
-      setLoading(false);
+      await register({ email, name, password });
+      navigate('/login');
+    } catch (err) {
+      setError('Registration failed. Please try again.');
     }
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: 'auto' }}>
+    <div className="register-container">
       <h2>Register</h2>
-      <Form onFinish={onFinish}>
-        <Form.Item
-          name="fullName"
-          rules={[{ required: true, message: 'Please input your full name!' }]}
-        >
-          <Input placeholder="Full Name" />
-        </Form.Item>
-        <Form.Item
-          name="email"
-          rules={[{ required: true, message: 'Please input your email!' }]}
-        >
-          <Input placeholder="Email" />
-        </Form.Item>
-        <Form.Item
-          name="password"
-          rules={[{ required: true, message: 'Please input your password!' }]}
-        >
-          <Input.Password placeholder="Password" />
-        </Form.Item>
-        <Form.Item>
-          <Button type="primary" htmlType="submit" loading={loading}>
-            Register
-          </Button>
-        </Form.Item>
-      </Form>
+      <form onSubmit={handleRegister}>
+        <input
+          type="text"
+          placeholder="Full Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        {error && <p className="error">{error}</p>}
+        <button type="submit">Register</button>
+      </form>
     </div>
   );
 };
