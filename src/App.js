@@ -1,31 +1,17 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React from "react";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Login from './components/Login';
 import Register from './components/Register';
-import Home from './components/Home';
 
-const App = () => {
-  const token = useSelector((state) => state.auth.token);
-
+function App() {
   return (
-    <Router>
+    <BrowserRouter>
       <Routes>
-        {!token ? (
-          <>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="*" element={<Navigate to="/login" />} />
-          </>
-        ) : (
-          <>
-            <Route path="/" element={<Home />} />
-            <Route path="*" element={<Navigate to="/" />} />
-          </>
-        )}
+        <Route path="/" element={<Login />}></Route>
+        <Route path="/register" element={<Register />}></Route>
       </Routes>
-    </Router>
+    </BrowserRouter>
   );
-};
+}
 
 export default App;
