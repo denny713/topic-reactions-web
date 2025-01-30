@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { post } from "../api/axios";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from 'react-redux';
+import { loginSuccess } from '../api/redux/reducers/auth';
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../css/style.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -14,6 +16,7 @@ const Login = () => {
   });
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -29,7 +32,35 @@ const Login = () => {
 
     post("http://localhost:7373/api/auth/login", payload)
       .then((response) => {
-        navigate("/home");
+        if (response.code === 200) {
+          const accessToken = response.data.accessToken;
+          localStorage.setItem('accessToken', accessToken);
+
+          post("http://localhost:7373/api/account/me", payload)
+            .then((res) => {
+              dispatch(
+                loginSuccess({
+                  user: res.data,
+                  token: accessToken,
+                })
+              );
+
+              navigate("/");
+            })
+            .catch((err) => {
+              Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "Found error",
+              });
+            });
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Incorrect password",
+          });
+        }
       })
       .catch((error) => {
         Swal.fire({

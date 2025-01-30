@@ -10,6 +10,23 @@ const axiosInstance = axios.create({
     }
 });
 
+axiosInstance.interceptors.request.use(
+    (config) => {
+        const isAuthPage = config.url.includes('/login') || config.url.includes('/register');
+        if (!isAuthPage) {
+            const token = localStorage.getItem('accessToken');
+            if (token) {
+                config.headers['Authorization'] = `Bearer ${token}`;
+            }
+        }
+
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+
 export const get = (url, params = {}) => {
     return axiosInstance
         .get(url, { params })
